@@ -23,6 +23,8 @@ export class GEPService extends EventEmitter {
   async saveToDataBase() {
     try {
       const fileName = GameFileName[this.gameLaunchId as keyof typeof GameFileName];
+      // use http://localhost:3000/writeToFile for dev mode
+      // use https://overwolf-duel-api-207077dd4a09.herokuapp.com/writeToFile for prod
       const response = await fetch('http://localhost:3000/writeToFile', {
         method: 'POST',
         headers: {
@@ -304,16 +306,16 @@ export class GEPService extends EventEmitter {
   private handleLeagueOfLegendsEvents(
       event: overwolf.games.events.NewGameEvents,
   ): void {
-    const defeatEvent = event.events.find((item) => item.name === 'defeat');
-    if (defeatEvent && (this.info.length || this.events.length)) {
-      this.events.push(defeatEvent);
-      this.saveToDataBase();
-      return;
-    }
-
-    const victoryEvent = event.events.find((item) => item.name === 'victory');
-    if (victoryEvent && (this.info.length || this.events.length)) {
-      this.events.push(victoryEvent);
+    const matchEndEvent = event.events.find(
+      (item) => item.name === 'announcer',
+    );
+    if (
+      matchEndEvent &&
+      (this.info.length || this.events.length) &&
+      (matchEndEvent.data.includes('victory') ||
+        matchEndEvent.data.includes('defeat'))
+    ) {
+      this.events.push(matchEndEvent);
       this.saveToDataBase();
     }
   }
@@ -330,11 +332,8 @@ export class GEPService extends EventEmitter {
     if (
         info.info.live_client_data &&
         // eslint-disable-next-line max-len
-        (Object.prototype.hasOwnProperty.call(info.info.live_client_data, 'active_player') ||
-        Object.prototype.hasOwnProperty.call(info.info.live_client_data, 'all_players') ||
-        Object.prototype.hasOwnProperty.call(info.info.live_client_data, 'events') ||
-        Object.prototype.hasOwnProperty.call(info.info.live_client_data, 'game_data') ||
-        Object.prototype.hasOwnProperty.call(info.info.live_client_data, 'port'))
+        (Object.prototype.hasOwnProperty.call(info.info.live_client_data, 'all_players') ||
+        Object.prototype.hasOwnProperty.call(info.info.live_client_data, 'events'))
     ) {
       this.info.push(info.info);
     }

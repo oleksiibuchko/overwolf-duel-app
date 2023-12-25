@@ -1,8 +1,8 @@
-# events-sample-app
+# overwolf-duel-client app
 
-A TypeScript-based, maintainable events sample app.
+A TypeScript-based, overwolf events app.
 
-To get started, simply run:
+To build a project, run:
 ```
-yarn
+npm run build
 ```
