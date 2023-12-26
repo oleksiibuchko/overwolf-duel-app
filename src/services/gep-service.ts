@@ -25,7 +25,7 @@ export class GEPService extends EventEmitter {
       const fileName = GameFileName[this.gameLaunchId as keyof typeof GameFileName];
       // use http://localhost:3000/writeToFile for dev mode
       // use https://overwolf-duel-api-207077dd4a09.herokuapp.com/writeToFile for prod
-      const response = await fetch('http://localhost:3000/writeToFile', {
+      const response = await fetch('https://overwolf-duel-api-207077dd4a09.herokuapp.com/writeToFile', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
