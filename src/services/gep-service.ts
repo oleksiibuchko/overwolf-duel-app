@@ -306,6 +306,18 @@ export class GEPService extends EventEmitter {
   private handleLeagueOfLegendsEvents(
       event: overwolf.games.events.NewGameEvents,
   ): void {
+    const killEvent = event.events.find((item) => item.name === 'kill');
+    if (killEvent) {
+      this.events.push(killEvent);
+      return;
+    }
+
+    const deathEvent = event.events.find((item) => item.name === 'death');
+    if (deathEvent) {
+      this.events.push(deathEvent);
+      return;
+    }
+
     const matchEndEvent = event.events.find(
       (item) => item.name === 'announcer',
     );
@@ -332,8 +344,7 @@ export class GEPService extends EventEmitter {
     if (
         info.info.live_client_data &&
         // eslint-disable-next-line max-len
-        (Object.prototype.hasOwnProperty.call(info.info.live_client_data, 'all_players') ||
-        Object.prototype.hasOwnProperty.call(info.info.live_client_data, 'events'))
+        (Object.prototype.hasOwnProperty.call(info.info.live_client_data, 'all_players'))
     ) {
       this.info.push(info.info);
     }
