@@ -9,15 +9,22 @@ import {
   PostGameEvent,
 } from './interfaces/running-game';
 import { GEPConsumer } from './services/gep-consumer';
+import { AuthService } from './services/auth-service';
 
 // -----------------------------------------------------------------------------
 @injectable()
 export class Main {
+  loginButton = document.getElementById('discord-button');
+
   public constructor(
     private readonly gepService: GEPService,
     private readonly gepConsumer: GEPConsumer,
     private readonly gameDetectionService: GameDetectionService,
+    private readonly authService: AuthService,
   ) {
+    this.loginButton?.addEventListener('click', () => {
+      this.authService.login();
+    });
     this.init();
   }
 

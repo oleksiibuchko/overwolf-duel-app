@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import { injectable } from 'tsyringe';
 import { GameFileName, GameKey } from '../config/game-data';
+import { environment } from '../environment/environment';
 
 @injectable()
 export class GEPService extends EventEmitter {
@@ -23,9 +24,7 @@ export class GEPService extends EventEmitter {
   async saveToDataBase() {
     try {
       const fileName = GameFileName[this.gameLaunchId as keyof typeof GameFileName];
-      // use http://localhost:3000/writeToFile for dev mode
-      // use https://overwolf-duel-api-207077dd4a09.herokuapp.com/writeToFile for prod
-      const response = await fetch('https://overwolf-duel-api-207077dd4a09.herokuapp.com/writeToFile', {
+      const response = await fetch(environment.url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
