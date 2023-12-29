@@ -12,6 +12,7 @@
   "devDependencies": {
     "@overwolf/types": "^3.23.1",
     "@types/events": "^3.0.0",
+    "@types/uuid": "^9.0.7",
     "@typescript-eslint/eslint-plugin": "^5.44.0",
     "@typescript-eslint/parser": "^5.44.0",
     "del": "^6.0.0",
@@ -48,6 +49,7 @@
     "reflect-metadata": "^0.1.13",
     "tsyringe": "^4.7.0",
     "typescript-logging": "^2.0.2",
-    "typescript-logging-category-style": "^2.0.2"
+    "typescript-logging-category-style": "^2.0.2",
+    "uuid": "^9.0.1"
   }
 }

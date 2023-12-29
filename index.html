@@ -12,6 +12,7 @@
       height: 100vh;
       margin: 0;
       background-color: #7289DA;
+      overflow: hidden;
     }
 
     .center-container {
@@ -43,15 +44,31 @@
     .discord-button:hover {
       background-color: #5a68a3;
     }
+
+    .user-container {
+      margin-top: 20px;
+    }
+
+    .user-greeting {
+      color: #000000;
+      font-family: 'Arial', sans-serif;
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
   </style>
 </head>
 
-<body style="background-color:rgba(240, 7, 7, 0); overflow: hidden;">
+<body style="background-color:rgba(240, 7, 7, 0);">
   <div class="center-container">
     <button id="discord-button" class="discord-button">
       <img src="https://www.svgrepo.com/show/353655/discord-icon.svg" alt="Discord Icon" class="discord-icon">
       Sign In with Discord
     </button>
+
+    <div class="user-container">
+      <div class="user-greeting" id="userGreeting"></div>
+    </div>
   </div>
   <script type="text/javascript" src="./dist/main.js"></script>
 </body>

@@ -15,6 +15,8 @@ import { AuthService } from './services/auth-service';
 @injectable()
 export class Main {
   loginButton = document.getElementById('discord-button');
+  userGreeting = document.getElementById('userGreeting');
+  server: any;
 
   public constructor(
     private readonly gepService: GEPService,
@@ -25,7 +27,58 @@ export class Main {
     this.loginButton?.addEventListener('click', () => {
       this.authService.login();
     });
+    this.createServer();
     this.init();
+  }
+
+  createServer(): void {
+    const _port = 61234;
+
+    overwolf.web.createServer(_port, (serverInfo) => {
+      if (serverInfo.error) {
+        console.log('Failed to create server');
+      } else {
+        this.server = serverInfo.server;
+
+        if (!this.server) {
+          return;
+        }
+
+        // it is always good practice to removeListener before adding it
+        this.server.onRequest.removeListener(this.onRequest.bind(this));
+        this.server.onRequest.addListener(this.onRequest.bind(this));
+
+        this.server.listen((info: any) => {
+          console.log(`Server listening status on port ${_port} : ${info}`);
+        });
+      }
+    });
+  }
+
+  onRequest(info: { url: string }) {
+    const urlString = info.url;
+    const url = new URL(urlString);
+    const searchParams = url.searchParams;
+
+    // eslint-disable-next-line camelcase
+    const access_token = searchParams.get('access_token');
+    // eslint-disable-next-line camelcase
+    const token_type = searchParams.get('token_type');
+
+    // eslint-disable-next-line camelcase
+    if (access_token && token_type) {
+      localStorage.setItem('access_token', access_token);
+      localStorage.setItem('token_type', token_type);
+      this.authService.getUser().then((data) => {
+        const user = data.user;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        this.loginButton?.style.display = 'none';
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        this.userGreeting?.innerText = `Hi, ${user.username}. Enjoy playing games.`;
+      });
+    }
   }
 
   /**

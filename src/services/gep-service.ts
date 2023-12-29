@@ -30,7 +30,7 @@ export class GEPService extends EventEmitter {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          data: { events: this.events, info: this.info, fileName: fileName ? fileName : null  },
+          data: { events: this.events, info: this.info, fileName: fileName || null  },
         }),
       });
       this.events = [];
