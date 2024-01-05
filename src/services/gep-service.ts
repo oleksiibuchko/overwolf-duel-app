@@ -9,11 +9,18 @@ export class GEPService extends EventEmitter {
   private info: any = [];
   public gameLaunchId: null | number = null;
 
+  getDataButton = document.getElementById('get-data-button');
+  userData = document.getElementById('user-data');
+
   constructor() {
     super();
     this.onErrorListener = this.onErrorListener.bind(this);
     this.onInfoUpdateListener = this.onInfoUpdateListener.bind(this);
     this.onGameEventListener = this.onGameEventListener.bind(this);
+
+    this.getDataButton?.addEventListener('click', () => {
+      this.getFromDataBase();
+    });
   }
 
   /**
@@ -23,14 +30,25 @@ export class GEPService extends EventEmitter {
 
   async saveToDataBase() {
     try {
-      const fileName = GameFileName[this.gameLaunchId as keyof typeof GameFileName];
-      const response = await fetch(environment.url, {
+      const sessionId = localStorage.getItem('sessionId');
+      if (!sessionId) {
+        return;
+      }
+
+      const fileName =
+        GameFileName[this.gameLaunchId as keyof typeof GameFileName];
+      const response = await fetch(`${environment.url}/writeToFile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          data: { events: this.events, info: this.info, fileName: fileName || null  },
+          data: {
+            events: this.events,
+            info: this.info,
+            fileName: fileName || null,
+          },
+          sessionId,
         }),
       });
       this.events = [];
@@ -45,6 +63,35 @@ export class GEPService extends EventEmitter {
     } catch (error: any) {
       this.events = [];
       this.info = [];
+      console.error('Error:', error.message);
+    }
+  }
+
+  /**
+   * Get data from db
+   *
+   */
+
+  async getFromDataBase() {
+    try {
+      const sessionId = localStorage.getItem('sessionId');
+      if (!sessionId) {
+        return;
+      }
+
+      const response = await fetch(
+        `${environment.url}?sessionId=${sessionId}`,
+        {
+          method: 'GET',
+        },
+      );
+
+      response.json().then((data) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        this.userData?.innerText = JSON.stringify(data, null, 2);
+      });
+    } catch (error: any) {
       console.error('Error:', error.message);
     }
   }
@@ -146,7 +193,10 @@ export class GEPService extends EventEmitter {
       (item) => item.name === 'match_end',
     );
     if (matchEndEvent && this.events.length) {
-      this.events.push({ name: matchEndEvent.name, data: { date: new Date() } });
+      this.events.push({
+        name: matchEndEvent.name,
+        data: { date: new Date() },
+      });
       this.saveToDataBase();
     }
   }
@@ -174,7 +224,10 @@ export class GEPService extends EventEmitter {
 
     const matchEndEvent = event.events.find((item) => item.name === 'matchEnd');
     if (matchEndEvent && (this.info.length || this.events.length)) {
-      this.events.push({ name: matchEndEvent.name, data: { date: new Date() } });
+      this.events.push({
+        name: matchEndEvent.name,
+        data: { date: new Date() },
+      });
       this.saveToDataBase();
     }
   }
@@ -193,7 +246,10 @@ export class GEPService extends EventEmitter {
       (Object.prototype.hasOwnProperty.call(info.info.matchState, 'started') ||
         Object.prototype.hasOwnProperty.call(info.info.matchState, 'ended'))
     ) {
-      this.info.push({ matchState: info.info.matchState, data: { date: new Date() } });
+      this.info.push({
+        matchState: info.info.matchState,
+        data: { date: new Date() },
+      });
     }
 
     if (info.info.playersInfo) {
@@ -227,15 +283,23 @@ export class GEPService extends EventEmitter {
       return;
     }
 
-    const matchStartEvent = event.events.find((item) => item.name === 'matchStart');
+    const matchStartEvent = event.events.find(
+      (item) => item.name === 'matchStart',
+    );
     if (matchStartEvent) {
-      this.events.push({ name: matchStartEvent.name, data: { date: new Date() } });
+      this.events.push({
+        name: matchStartEvent.name,
+        data: { date: new Date() },
+      });
       return;
     }
 
     const matchEndEvent = event.events.find((item) => item.name === 'matchEnd');
     if (matchEndEvent && (this.info.length || this.events.length)) {
-      this.events.push({ name: matchEndEvent.name, data: { date: new Date() } });
+      this.events.push({
+        name: matchEndEvent.name,
+        data: { date: new Date() },
+      });
       this.saveToDataBase();
     }
   }
@@ -264,17 +328,27 @@ export class GEPService extends EventEmitter {
    * - An array of fired Game Events
    */
   private handleValorantEvents(
-      event: overwolf.games.events.NewGameEvents,
+    event: overwolf.games.events.NewGameEvents,
   ): void {
-    const matchStartEvent = event.events.find((item) => item.name === 'match_start');
+    const matchStartEvent = event.events.find(
+      (item) => item.name === 'match_start',
+    );
     if (matchStartEvent) {
-      this.events.push({ name: matchStartEvent.name, data: { date: new Date() } });
+      this.events.push({
+        name: matchStartEvent.name,
+        data: { date: new Date() },
+      });
       return;
     }
 
-    const matchEndEvent = event.events.find((item) => item.name === 'match_end');
+    const matchEndEvent = event.events.find(
+      (item) => item.name === 'match_end',
+    );
     if (matchEndEvent && (this.info.length || this.events.length)) {
-      this.events.push({ name: matchEndEvent.name, data: { date: new Date() } });
+      this.events.push({
+        name: matchEndEvent.name,
+        data: { date: new Date() },
+      });
       this.saveToDataBase();
     }
   }
@@ -289,8 +363,8 @@ export class GEPService extends EventEmitter {
    */
   private handleValorantInfo(info: any) {
     if (
-        info.info.match_info &&
-        Object.prototype.hasOwnProperty.call(info.info.match_info, 'kill_feed')
+      info.info.match_info &&
+      Object.prototype.hasOwnProperty.call(info.info.match_info, 'kill_feed')
     ) {
       this.info.push(info.info);
     }
@@ -303,7 +377,7 @@ export class GEPService extends EventEmitter {
    * - An array of fired Game Events
    */
   private handleLeagueOfLegendsEvents(
-      event: overwolf.games.events.NewGameEvents,
+    event: overwolf.games.events.NewGameEvents,
   ): void {
     const killEvent = event.events.find((item) => item.name === 'kill');
     if (killEvent) {
@@ -341,9 +415,12 @@ export class GEPService extends EventEmitter {
    */
   private handleLeagueOfLegendsInfo(info: any) {
     if (
-        info.info.live_client_data &&
-        // eslint-disable-next-line max-len
-        (Object.prototype.hasOwnProperty.call(info.info.live_client_data, 'all_players'))
+      info.info.live_client_data &&
+      // eslint-disable-next-line max-len
+      Object.prototype.hasOwnProperty.call(
+        info.info.live_client_data,
+        'all_players',
+      )
     ) {
       this.info.push(info.info);
     }
@@ -355,9 +432,7 @@ export class GEPService extends EventEmitter {
    * @param {overwolf.games.events.NewGameEvents} event
    * - An array of fired Game Events
    */
-  private handlePUBGEvents(
-      event: overwolf.games.events.NewGameEvents,
-  ): void {
+  private handlePUBGEvents(event: overwolf.games.events.NewGameEvents): void {
     const killEvent = event.events.find((item) => item.name === 'kill');
     if (killEvent) {
       this.events.push(killEvent);
@@ -376,13 +451,20 @@ export class GEPService extends EventEmitter {
       return;
     }
 
-    const matchStartEvent = event.events.find((item) => item.name === 'matchStart');
+    const matchStartEvent = event.events.find(
+      (item) => item.name === 'matchStart',
+    );
     if (matchStartEvent) {
-      this.events.push({ name: matchStartEvent.name, data: { date: new Date() } });
+      this.events.push({
+        name: matchStartEvent.name,
+        data: { date: new Date() },
+      });
       return;
     }
 
-    const matchSummaryEvent = event.events.find((item) => item.name === 'matchSummary');
+    const matchSummaryEvent = event.events.find(
+      (item) => item.name === 'matchSummary',
+    );
     if (matchSummaryEvent) {
       this.events.push(matchSummaryEvent);
       return;
@@ -390,7 +472,10 @@ export class GEPService extends EventEmitter {
 
     const matchEndEvent = event.events.find((item) => item.name === 'matchEnd');
     if (matchEndEvent && (this.info.length || this.events.length)) {
-      this.events.push({ name: matchEndEvent.name, data: { date: new Date() } });
+      this.events.push({
+        name: matchEndEvent.name,
+        data: { date: new Date() },
+      });
       this.saveToDataBase();
     }
   }
@@ -405,9 +490,9 @@ export class GEPService extends EventEmitter {
    */
   private handlePUBGInfo(info: any) {
     if (
-        info.info.match_info &&
-        Object.prototype.hasOwnProperty.call(info.info.match_info, 'kills') ||
-        Object.prototype.hasOwnProperty.call(info.info.match_info, 'headshots')
+      (info.info.match_info &&
+        Object.prototype.hasOwnProperty.call(info.info.match_info, 'kills')) ||
+      Object.prototype.hasOwnProperty.call(info.info.match_info, 'headshots')
     ) {
       this.info.push(info.info);
     }
@@ -419,9 +504,7 @@ export class GEPService extends EventEmitter {
    * @param {overwolf.games.events.NewGameEvents} event
    * - An array of fired Game Events
    */
-  private handleCS2Events(
-      event: overwolf.games.events.NewGameEvents,
-  ): void {
+  private handleCS2Events(event: overwolf.games.events.NewGameEvents): void {
     const killEvent = event.events.find((item) => item.name === 'kill');
     if (killEvent) {
       this.events.push(killEvent);
@@ -434,21 +517,33 @@ export class GEPService extends EventEmitter {
       return;
     }
 
-    const killFeedEvent = event.events.find((item) => item.name === 'kill_feed');
+    const killFeedEvent = event.events.find(
+      (item) => item.name === 'kill_feed',
+    );
     if (killFeedEvent) {
       this.events.push(killFeedEvent);
       return;
     }
 
-    const matchStartEvent = event.events.find((item) => item.name === 'match_start');
+    const matchStartEvent = event.events.find(
+      (item) => item.name === 'match_start',
+    );
     if (matchStartEvent) {
-      this.events.push({ name: matchStartEvent.name, data: { date: new Date() } });
+      this.events.push({
+        name: matchStartEvent.name,
+        data: { date: new Date() },
+      });
       return;
     }
 
-    const matchEndEvent = event.events.find((item) => item.name === 'match_end');
+    const matchEndEvent = event.events.find(
+      (item) => item.name === 'match_end',
+    );
     if (matchEndEvent && (this.info.length || this.events.length)) {
-      this.events.push({ name: matchEndEvent.name, data: { date: new Date() } });
+      this.events.push({
+        name: matchEndEvent.name,
+        data: { date: new Date() },
+      });
       this.saveToDataBase();
     }
   }
@@ -632,7 +727,9 @@ export class GEPService extends EventEmitter {
    */
   public unregisterEvents() {
     overwolf.games.events.onError.removeListener(this.onErrorListener);
-    overwolf.games.events.onInfoUpdates2.removeListener(this.onInfoUpdateListener);
+    overwolf.games.events.onInfoUpdates2.removeListener(
+      this.onInfoUpdateListener,
+    );
     overwolf.games.events.onNewEvents.removeListener(this.onGameEventListener);
   }
 }

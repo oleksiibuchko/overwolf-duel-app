@@ -32,29 +32,14 @@ export class AuthService {
 
   constructor() {}
 
-  async getUser(): Promise<any> {
+  async getUser(sessionId: string): Promise<any> {
     try {
-      const accessToken = localStorage.getItem('access_token');
-      const tokenType = localStorage.getItem('token_type');
-
-      if (!accessToken || !tokenType) {
-        console.log('invalid token');
-        // Reject the promise if access token or token type is missing
-        return Promise.reject(new Error('Invalid token'));
-      }
-
-      const response = await fetch(environment.url + '/auth/discord/user', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        environment.url + `/auth/discord/user?sessionId=${sessionId}`,
+        {
+          method: 'GET',
         },
-        body: JSON.stringify({
-          data: {
-            access_token: accessToken,
-            token_type: tokenType,
-          },
-        }),
-      });
+      );
 
       if (response.ok) {
         // Parse and return the JSON data
@@ -78,6 +63,7 @@ export class AuthService {
       });
 
       response.json().then((data) => {
+        localStorage.setItem('sessionId', data.sessionId);
         overwolf.utils.openUrlInDefaultBrowser(data.url);
       });
     } catch (error: any) {
