@@ -61,6 +61,10 @@ export class Main {
       this.getDataButton?.style.display = 'block';
       this.init();
     });
+
+    this.authService.getConnections(sessionId).then((data) => {
+      console.log(data);
+    });
   }
 
   /**

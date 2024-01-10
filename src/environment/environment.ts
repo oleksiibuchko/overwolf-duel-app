@@ -2,5 +2,5 @@
 // use https://overwolf-duel-api-207077dd4a09.herokuapp.com for prod
 
 export const environment = {
-  url: 'https://overwolf-duel-api-207077dd4a09.herokuapp.com',
+  url: 'http://localhost:3000',
 };

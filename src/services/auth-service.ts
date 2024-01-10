@@ -56,6 +56,30 @@ export class AuthService {
     }
   }
 
+  async getConnections(sessionId: string): Promise<any> {
+    try {
+      const response = await fetch(
+          environment.url + `/auth/discord/connections?sessionId=${sessionId}`,
+          {
+            method: 'GET',
+          },
+      );
+
+      if (response.ok) {
+        // Parse and return the JSON data
+        return response.json();
+      } else {
+        console.error('Error:', response.statusText);
+        // Reject the promise with an error message
+        return Promise.reject(new Error(response.statusText));
+      }
+    } catch (error: any) {
+      console.error('Error:', error.message);
+      // Reject the promise with the caught error
+      return Promise.reject(error);
+    }
+  }
+
   async login(): Promise<void> {
     try {
       const response = await fetch(environment.url + '/auth/discord/login', {
